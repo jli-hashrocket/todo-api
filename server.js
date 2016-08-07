@@ -24,6 +24,22 @@ app.get('/todos', function(req, res){
   res.json(todos);
 });
 //GET /todos/id
+app.get('/todos/:id', function(req, res){
+  var todoId = req.params.id;
+  var matchedTodo;
+  //Iterate todos array. Find the match.
+  todos.forEach(function(todo){
+    if ( Number(todoId) === todo.id) {
+      matchedTodo = todo;
+    }
+  });
+
+  if (matchedTodo) {
+    res.json(matchedTodo);
+  } else {
+    res.status(404).send();
+  }
+});
 
 
 app.listen(PORT, function(){
