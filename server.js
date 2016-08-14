@@ -42,7 +42,7 @@ app.post('/todos', function (req, res){
   body.id = todoNextId;
   // push body into array
   todos.push(body);
-  todoNextId += 1
+  todoNextId += 1;
   console.log(todos);
   res.json(body);
 });
