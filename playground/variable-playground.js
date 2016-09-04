@@ -15,7 +15,6 @@ var grades = [15,37];
 
 function addGrade(grades){
   grades.push(78);
-  debugger;
 }
 
 addGrade(grades);
