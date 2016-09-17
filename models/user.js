@@ -94,7 +94,7 @@ module.exports = function (sequelize, DataTypes) {
       },
       generateToken: function (type) {
         if (!_.isString(type)){
-          return undefined
+          return undefined;
         }
 
         try {
