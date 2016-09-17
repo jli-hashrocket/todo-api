@@ -19,7 +19,7 @@ app.get('/', function(req, res) {
 //GET /todos?completed=true&q=house
 app.get('/todos', middleware.requireAuthentication, function(req, res){
   var query = req.query;
-  var where = {};
+  var where = { userId: req.user.get('id') }; // req.user.get('id')
 
   if( query.hasOwnProperty('completed') && query.completed === 'true' ) {
     where.completed = true;
@@ -44,8 +44,9 @@ app.get('/todos', middleware.requireAuthentication, function(req, res){
 //GET /todos/id
 app.get('/todos/:id', middleware.requireAuthentication, function(req, res){
   var todoId = req.params.id;
-
-  db.todo.findById(todoId).then(function (todo) {
+  var where = { id: todoId, userId: req.user.get('id') };
+  // use findOne
+  db.todo.findOne(where).then(function (todo) {
     if (!!todo) {
       res.json(todo.toJSON());
     } else {
@@ -75,24 +76,29 @@ app.post('/todos', middleware.requireAuthentication, function (req, res){
 // Delete /todos/:id
 app.delete('/todos/:id', middleware.requireAuthentication, function(req, res){
   var todoId = parseInt(req.params.id);
+  var where = { id: todoId, userId: req.user.get('id') };
 
-  db.todo.findById(todoId).then(function(todo){
-    if (todo) {
-      res.status(200).json({message: 'Todo id:' + todo.id + ' has been deleted'});
-      todo.destroy();
+  db.todo.destroy({
+    where: where
+  }).then(function(rowsDeleted) {
+    if (rowsDeleted === 0) {
+      res.status(404).json({
+        error: 'No todo with id'
+      });
     } else {
-      res.status(404).json({error: 'Todo cannot be found'});
+      res.status(204).send();
     }
-  }, function (e) {
+  }, function () {
     res.status(500).send();
   });
 });
 
 // PUT /todos/:id
-app.put('/todos/:id', function(req, res){
-  var todoId = parseInt(req.params.id);
+app.put('/todos/:id', middleware.requireAuthentication, function(req, res){
+  var todoId = parseInt(req.params.id, 10);
   var body = _.pick(req.body, 'description', 'completed');
   var attributes = {};
+  var where = { id: todoId, userId: req.user.get('id') };
 
   if (body.hasOwnProperty('completed') ) {
     attributes.completed = body.completed;
@@ -102,7 +108,7 @@ app.put('/todos/:id', function(req, res){
     attributes.description = body.description;
   }
 
-  db.todo.findById(todoId).then(function (todo) {
+  db.todo.findOne(where).then(function (todo) {
     if (todo) {
       todo.update(attributes).then(function (todo) {
         res.json(todo.toJSON());
