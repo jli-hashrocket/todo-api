@@ -46,7 +46,7 @@ app.get('/todos/:id', middleware.requireAuthentication, function(req, res){
   var todoId = req.params.id;
   var where = { id: todoId, userId: req.user.get('id') };
   // use findOne
-  db.todo.findOne(where).then(function (todo) {
+  db.todo.findOne({where: where}).then(function (todo) {
     if (!!todo) {
       res.json(todo.toJSON());
     } else {
@@ -108,7 +108,7 @@ app.put('/todos/:id', middleware.requireAuthentication, function(req, res){
     attributes.description = body.description;
   }
 
-  db.todo.findOne(where).then(function (todo) {
+  db.todo.findOne({where: where}).then(function (todo) {
     if (todo) {
       todo.update(attributes).then(function (todo) {
         res.json(todo.toJSON());
